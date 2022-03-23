@@ -1,37 +1,121 @@
-## Welcome to GitHub Pages
+---
+title: "task3"
+author: "Zhang Shuo"
+date: "3/8/2022"
+output: 
+  html_document:
+    theme: darkly
+  
+---
 
-You can use the [editor on GitHub](https://github.com/ZHANGSHUO22/task3/edit/main/docs/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+## 1.example 3
 
-### Jekyll Themes
+### theoretical part
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/ZHANGSHUO22/task3/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+$$
+\text { Consider a random vector } \boldsymbol{X} \sim N_{2}(\boldsymbol{\mu}, \Sigma) \text {, for } \boldsymbol{\mu}=(2,2)^{\top} \text { and } \Sigma=\mathbb{l}_{2} \text { (a unit matrix). }
+$$
+then we have:
 
-### Support or Contact
+$$
+\boldsymbol{X} \sim N_{2}\left(\left(\begin{array}{c}
+2\\
+2
+\end{array}\right),\left(\begin{array}{ll}
+1 & 0 \\
+0 & 1
+\end{array}\right)\right)
+$$
+$$
+\text { Consider also matrices } 
+\mathbb { A }
+=(1,1) \text { and } 
+\mathbb{B}
+=(1,-1) . \text { Show, that the random variables } \mathbb{A}\boldsymbol{X} \text { and } \mathbb{B} \boldsymbol{X} \text { are independent. }
+$$
+then, we can get:
+$$
+\mathbb{A}\boldsymbol{X} \sim N(4, 2),
+\mathbb{B}\boldsymbol{X} \sim N(0, 2)
+$$
+$$cov(\mathbb{A}\boldsymbol{X},\mathbb{B}\boldsymbol{X})=\mathbb{A}cov(\boldsymbol{X},\boldsymbol{X})\mathbb{B}^T=\mathbb{A}\mathbb{B}^T=0
+$$
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+
+### simulation part
+```{r}
+n<-1000
+
+sample1 <- rnorm(n, mean=4, sd = sqrt(2))
+sample2 <- rnorm(n, mean=0, sd = 2)
+axPoints <- pnorm(sample1, mean(sample1), sd(sample1))
+bxPoints <- pnorm(sample2, mean(sample2), sd(sample2))
+
+
+plot(axPoints, bxPoints, pch = 21, bg = "lightgreen")
+lines(lowess(bxPoints ~ axPoints), col = "red", lwd = 2)
+
+```
+
+## 2.joint normality&marginals normality
+
+the joint normality of some random vector directly implies normality of all possible marginals. On the other hand, the normal distribution of all marginals does not necessarily imply the joint normality of the whole random vector.
+
+### theoretical part
+
+Define the 2-D Gaussian PDF with zero-mean
+$$
+\begin{aligned}
+&p_{X}(x)=\int p_{X Y}(x, y) d y \\
+&p_{Y}(y)=\int p_{X Y}(x, y) d x
+\end{aligned}
+$$
+
+$$
+p_{X Y}(x, y)=\frac{1}{2 \pi \sigma_{X} \sigma_{Y}} \exp \left\{\frac{-1}{2}\left(\frac{x^{2}}{\sigma_{X}^{2}}+\frac{y^{2}}{\sigma_{Y}^{2}}\right)\right\}
+$$
+because of the symmetry of this joint PDF about both x and y axes we can write these
+integrations as 
+$$
+\begin{aligned}
+&p_{X}(x)= \begin{cases}2 \int_{0}^{\infty} p_{X Y}(x, y) d y, & x>0 \\
+ \\
+2 \int_{-\infty}^{0} p_{X Y}(x, y) d y, & x \leq 0\end{cases} \\
+&p_{Y}(y)= \begin{cases}2 \int_{0}^{\infty} p_{X Y}(x, y) d x, & y>0 \\
+ \\
+2 \int_{0}^{-\infty} p_{X Y}(x, y) d x, & y \leq 0\end{cases}
+\end{aligned}
+$$
+This gives us the route to what we need. If we take this original 2-D Gaussian PDF and
+set it to zero over the non-hatched quadrants above and multiply the rest by two we get a new 2-D PDF that is definitely NOT
+Gaussian: 
+$$
+p_{\tilde{X} \tilde{Y}}(x, y)= \begin{cases}\frac{1}{\pi \sigma_{X} \sigma_{Y}} \exp \left\{\frac{-1}{2}\left(\frac{x^{2}}{\sigma_{X}^{2}}+\frac{y^{2}}{\sigma_{Y}^{2}}\right)\right\}, & \text { when } x y>0 \\ 0, & \text { when } x y \leq 0\end{cases}
+$$
+### simulation part
+
+we assuem 
+$$
+\boldsymbol{X} \sim N(0, 1),
+\boldsymbol{Y} \sim N(0, 1)
+$$
+
+
+
+```{r}
+n<-10000
+x<-rnorm(n,0,1)
+y<-rnorm(n,0,1)
+z<- 1/pi*exp(-0.5*(x^2+y^2))
+c<-x*y
+i<-ifelse(c>0,z,NA)
+hist(i, freq = F, col = "gray", breaks = ceiling(20))
+
+```
+```{r}
+shapiro.test(i)
+```
